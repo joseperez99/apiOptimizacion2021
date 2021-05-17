@@ -79,7 +79,7 @@ public class FramesService {
         return this.frames
                 .stream()
                 .filter(frameDTO -> frameDTO.getIdStopDeparture().equals(idDepartureStop))
-                .filter(frameDTO -> frameDTO.getIdStopArrival().equals(idArrivalStop))
+                .filter(frameDTO -> frameDTO.getArrivalDateTime().equals(idArrivalStop))
                 .collect(Collectors.toList());
     }
 

@@ -1,84 +1,27 @@
-package edu.unsj.fcefn.lcc.optimizacion.api.algorithm;
+package edu.unsj.fcefn.lcc.optimizacion.api.model.mappers;
 
 import edu.unsj.fcefn.lcc.optimizacion.api.model.domain.FrameDTO;
 import edu.unsj.fcefn.lcc.optimizacion.api.model.domain.StopDTO;
-import edu.unsj.fcefn.lcc.optimizacion.api.model.mappers.StopMapper;
-import edu.unsj.fcefn.lcc.optimizacion.api.services.AlgorithmService;
 import edu.unsj.fcefn.lcc.optimizacion.api.services.FramesService;
-import edu.unsj.fcefn.lcc.optimizacion.api.services.StopsService;
-import org.moeaframework.core.Solution;
-import org.moeaframework.core.Variable;
-import org.moeaframework.core.variable.EncodingUtils;
 import org.moeaframework.core.variable.Permutation;
-import org.moeaframework.problem.AbstractProblem;
+import org.moeaframework.problem.misc.Lis;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
-
-public class RoutingProblem extends AbstractProblem {
-
-    @Autowired
-    private FramesService framesService;
+@Component
+public class AlgorithmMapper {
 
     @Autowired
-    private AlgorithmService algorithmService;
+    FramesService framesService;
 
-    public RoutingProblem()
+    public List<FrameDTO> permutationToFrameList (Permutation permutation, List<StopDTO> stops)
     {
-        super(1, 2);
-    }
-
-    @Override
-    public void evaluate(Solution solution)
-    {
-        solution.setObjective(0, totalPrice(solution.getVariable(0)));
-        solution.setObjective(1, totalTime(solution.getVariable(1)));
-    }
-
-    private double totalPrice(Variable variable)
-    {
-        Permutation permutation = (Permutation) variable;
-        List<StopDTO> stops = algorithmService.getStops();
-
-        double totalPrice = 0;
-
-        for (int i = 0; i < permutation.size() - 1; i++)
-        {
-            StopDTO departureStop = stops.get(permutation.get(i));
-            StopDTO arrivalStop = stops.get(permutation.get(i));
-
-            List<FrameDTO> frames = framesService
-                    .findByIdDeparturesStopAndIdArrivalStop(departureStop.getId(), arrivalStop.getId());
-
-            FrameDTO bestPrice = frames
-                    .stream()
-                    .min(Comparator.comparing(FrameDTO::getPrice))
-                    .orElse(null);
-
-            if (Objects.isNull(bestPrice))
-            {
-                return Double.MAX_VALUE;
-            }
-
-            totalPrice += bestPrice.getPrice();
-        }
-
-        return totalPrice;
-    }
-
-    private double totalTime(Variable variable)
-    {
-        Permutation permutation = (Permutation) variable;
-        List<StopDTO> stops = algorithmService.getStops();
-        if (stops == null) {return Double.MAX_VALUE;}
-
-        double totalTime = 0;
-        FrameDTO frameDTO = null;
+        List<FrameDTO> solutionFrames = new ArrayList<>();
+        FrameDTO frameDTO = new FrameDTO();
 
         for (int i = 0; i < permutation.size() - 1; i++)
         {
@@ -112,14 +55,14 @@ public class RoutingProblem extends AbstractProblem {
 
             if(Objects.isNull(frameDTO))
             {
-                return Double.MAX_VALUE;
+                return new ArrayList<>();
             }
 
-            totalTime += frameIdDuration.getValue();
+            solutionFrames.add(frameDTO);
 
         }
 
-        return totalTime;
+        return solutionFrames;
     }
 
     private Map<Integer,Long> getMapTime1(List<FrameDTO> frames)
@@ -171,13 +114,7 @@ public class RoutingProblem extends AbstractProblem {
 
         }
         return timeMap;
+
     }
 
-    @Override
-    public Solution newSolution()
-    {
-        Solution solution = new Solution(1,2);
-        solution.setVariable(0, EncodingUtils.newPermutation(20));
-        return solution;
-    }
 }
