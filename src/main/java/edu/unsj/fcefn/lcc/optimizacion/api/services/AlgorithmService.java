@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.moeaframework.Executor;
 
-
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -23,33 +22,29 @@ import java.util.stream.StreamSupport;
 public class AlgorithmService {
 
     @Autowired
-    private StopsService stopsService;
+    StopsService stopsService;
 
     @Autowired
-    private AlgorithmMapper algorithmMapper;
+    FramesService framesService;
 
-    private List<StopDTO> stops;
+    @Autowired
+    AlgorithmMapper algorithmMapper;
+
+    List<StopDTO> stops;
+    List<FrameDTO> frames;
 
     @PostConstruct
-    private void init()
-    {
-        this.stops = stopsService
-                .findAll()
-                .stream()
-                .sorted(Comparator.comparing(StopDTO::getRanking).reversed())
-                .collect(Collectors.toList())
-                .subList(0,20);
-    }
+    private void init(){
+        stops = stopsService.findTop20();
+        frames = framesService.findAll();
 
-    public List<StopDTO> getStops() {
-        return stops;
     }
 
     public List<FrameDTO> execute()
     {
         NondominatedPopulation population = new Executor()
                 .withAlgorithm("NSGAII")
-                .withProblemClass(RoutingProblem.class)
+                .withProblemClass(RoutingProblem.class, stops, frames)
                 .withMaxEvaluations(100000)
                 .run();
 

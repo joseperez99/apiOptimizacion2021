@@ -20,6 +20,12 @@ public class StopsController {
         return stopsService.findAll();
     }
 
+    @GetMapping(value = "/findTop20")
+    public List<StopDTO> findTop20()
+    {
+        return stopsService.findTop20();
+    }
+
     @GetMapping(value = "{id}")
     public StopDTO find (@PathVariable("id") Integer id)
     {

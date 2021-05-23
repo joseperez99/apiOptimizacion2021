@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Duration;
-import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -50,7 +49,7 @@ public class TestController {
                 .collect(Collectors.toList())
                 .subList(0,3);
     }
-
+/*
     @GetMapping(value = "a")
     public List<FrameDTO> test2 ()
     {
@@ -64,4 +63,5 @@ public class TestController {
         return framesService
                 .findByIdDeparturesStopAndIdArrivalStop(19, 315);
     }
+ */
 }

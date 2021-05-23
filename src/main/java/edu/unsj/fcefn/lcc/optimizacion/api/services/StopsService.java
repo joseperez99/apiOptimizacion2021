@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 @Service
 public class StopsService
 {
+
     @Autowired
     StopsRepository stopsRepository;
 
@@ -27,6 +28,16 @@ public class StopsService
                 .stream()
                 .map(stopEntity -> stopMapper.entityToDTO(stopEntity))
                 .collect(Collectors.toList());
+    }
+
+    public List<StopDTO> findTop20()
+    {
+        return stopsRepository
+                .findAll()
+                .stream()
+                .map(stopEntity -> stopMapper.entityToDTO(stopEntity))
+                .collect(Collectors.toList())
+                .subList(0,14);
     }
 
     public StopDTO find(Integer id)

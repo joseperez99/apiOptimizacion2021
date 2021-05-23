@@ -4,7 +4,6 @@ import edu.unsj.fcefn.lcc.optimizacion.api.model.domain.FrameDTO;
 import edu.unsj.fcefn.lcc.optimizacion.api.model.domain.StopDTO;
 import edu.unsj.fcefn.lcc.optimizacion.api.services.FramesService;
 import org.moeaframework.core.variable.Permutation;
-import org.moeaframework.problem.misc.Lis;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
