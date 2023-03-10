@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/stops")
 public class StopsController {
@@ -20,29 +21,14 @@ public class StopsController {
         return stopsService.findAll();
     }
 
-    @GetMapping(value = "/findTop20")
-    public List<StopDTO> findTop20()
-    {
-        return stopsService.findTop20();
-    }
-
     @GetMapping(value = "{id}")
-    public StopDTO find (@PathVariable("id") Integer id)
-    {
-        return stopsService.find(id);
-    }
+    public StopDTO find (@PathVariable("id") Integer id) { return stopsService.find(id); }
 
     @PostMapping(value = "")
-    public StopDTO add (@RequestBody StopDTO stopDTO)
-    {
-        return stopsService.add(stopDTO);
-    }
+    public StopDTO add (@RequestBody StopDTO stopDTO) { return stopsService.add(stopDTO); }
 
     @PutMapping(value = "")
-    public StopDTO edit (@RequestBody StopDTO stopDTO)
-    {
-        return stopsService.edit(stopDTO);
-    }
+    public StopDTO edit (@RequestBody StopDTO stopDTO) { return stopsService.edit(stopDTO); }
 
     @DeleteMapping(value = "{id}")
     public  StopDTO delete (@PathVariable("id") Integer id ) throws Exception

@@ -7,6 +7,7 @@ import edu.unsj.fcefn.lcc.optimizacion.api.model.repositories.StopsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,14 +31,11 @@ public class StopsService
                 .collect(Collectors.toList());
     }
 
-    public List<StopDTO> findTop20()
+    public List<StopDTO> getStopsById(Integer[] ids)
     {
-        return stopsRepository
-                .findAll()
-                .stream()
-                .map(stopEntity -> stopMapper.entityToDTO(stopEntity))
-                .collect(Collectors.toList())
-                .subList(0,14);
+        return Arrays.stream(ids)
+                .map(id -> find(id))
+                .collect(Collectors.toList());
     }
 
     public StopDTO find(Integer id)

@@ -34,7 +34,7 @@ public class FramesService {
         return framesRepository
                 .findAll()
                 .stream()
-                .map(stopEntity -> frameMapper.entityToDTO(stopEntity))
+                .map(frameEntity -> frameMapper.entityToDTO(frameEntity))
                 .collect(Collectors.toList());
     }
 

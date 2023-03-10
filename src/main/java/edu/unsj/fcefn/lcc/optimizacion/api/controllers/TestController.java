@@ -5,16 +5,14 @@ import edu.unsj.fcefn.lcc.optimizacion.api.model.domain.StopDTO;
 import edu.unsj.fcefn.lcc.optimizacion.api.services.FramesService;
 import edu.unsj.fcefn.lcc.optimizacion.api.services.StopsService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@CrossOrigin
 @RestController()
 @RequestMapping("/test")
 public class TestController {
@@ -49,7 +47,7 @@ public class TestController {
                 .collect(Collectors.toList())
                 .subList(0,3);
     }
-/*
+    /*
     @GetMapping(value = "a")
     public List<FrameDTO> test2 ()
     {
@@ -63,5 +61,5 @@ public class TestController {
         return framesService
                 .findByIdDeparturesStopAndIdArrivalStop(19, 315);
     }
- */
+    */
 }

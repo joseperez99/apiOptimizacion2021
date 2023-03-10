@@ -16,6 +16,7 @@ public class FrameMapper {
         frameDTO.setIdStopDeparture(frameEntity.getIdStopDeparture());
         frameDTO.setIdStopArrival(frameEntity.getIdStopArrival());
         frameDTO.setPrice(frameEntity.getPrice());
+        frameDTO.setCategory(frameEntity.getCategory());
         frameDTO.setDepartureDateTime(frameEntity.getDepartureDateTime());
         frameDTO.setArrivalDateTime(frameEntity.getArrivalDateTime());
 
@@ -31,6 +32,7 @@ public class FrameMapper {
         frameEntity.setIdStopDeparture(frameDTO.getIdStopDeparture());
         frameEntity.setIdStopArrival(frameDTO.getIdStopArrival());
         frameEntity.setPrice(frameDTO.getPrice());
+        frameEntity.setCategory(frameDTO.getCategory());
         frameEntity.setDepartureDateTime(frameDTO.getDepartureDateTime());
         frameEntity.setArrivalDateTime(frameDTO.getArrivalDateTime());
 

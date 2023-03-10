@@ -2,32 +2,28 @@ package edu.unsj.fcefn.lcc.optimizacion.api.algorithm;
 
 import edu.unsj.fcefn.lcc.optimizacion.api.model.domain.FrameDTO;
 import edu.unsj.fcefn.lcc.optimizacion.api.model.domain.StopDTO;
-import edu.unsj.fcefn.lcc.optimizacion.api.services.AlgorithmService;
-import edu.unsj.fcefn.lcc.optimizacion.api.services.FramesService;
-import edu.unsj.fcefn.lcc.optimizacion.api.services.StopsService;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variable;
 import org.moeaframework.core.variable.EncodingUtils;
 import org.moeaframework.core.variable.Permutation;
 import org.moeaframework.problem.AbstractProblem;
-import org.moeaframework.problem.misc.Lis;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 public class RoutingProblem extends AbstractProblem {
 
     List<StopDTO> stops;
     List<FrameDTO> frames;
 
-    public RoutingProblem(List<StopDTO> stops, List<FrameDTO> frames)
+    Integer nIds;
+
+    public RoutingProblem(List<StopDTO> stops, List<FrameDTO> frames, Integer nIds)
     {
         super(1,2);
+        this.nIds = nIds;
         this.stops = stops;
         this.frames = frames;
     }
@@ -42,13 +38,15 @@ public class RoutingProblem extends AbstractProblem {
     private double totalPrice(Variable variable)
     {
         Permutation permutation = (Permutation) variable;
-
         double totalPrice = 0;
 
-        for (int i = 0; i < permutation.size() - 1; i++)
+        StopDTO departureStop;
+        StopDTO arrivalStop;
+
+        departureStop = stops.get(0);
+        for (int i = 0; i < permutation.size() ; i++)
         {
-            StopDTO departureStop = stops.get(permutation.get(i));
-            StopDTO arrivalStop = stops.get(permutation.get(i+1));
+            arrivalStop = stops.get(permutation.get(i)+1);
 
             List<FrameDTO> framesAux = findByIdDeparturesStopAndIdArrivalStop(departureStop.getId(), arrivalStop.getId());
 
@@ -57,46 +55,48 @@ public class RoutingProblem extends AbstractProblem {
                     .min(Comparator.comparing(FrameDTO::getPrice))
                     .orElse(null);
 
-            if (Objects.isNull(bestPrice))
-            {
-                return Double.MAX_VALUE;
-            }
+            if (Objects.isNull(bestPrice)){ return Double.MAX_VALUE; }
 
             totalPrice += bestPrice.getPrice();
+            departureStop = arrivalStop;
         }
-        totalPrice=totalPrice-1;
-        totalPrice=totalPrice+1;
+
+        arrivalStop = stops.get(nIds-1);
+
+        List<FrameDTO> framesAux = findByIdDeparturesStopAndIdArrivalStop(departureStop.getId(), arrivalStop.getId());
+
+        FrameDTO bestPrice = framesAux
+                .stream()
+                .min(Comparator.comparing(FrameDTO::getPrice))
+                .orElse(null);
+
+        if (Objects.isNull(bestPrice)) { return Double.MAX_VALUE; }
+
+        totalPrice += bestPrice.getPrice();
         return totalPrice;
     }
 
     private double totalTime(Variable variable)
     {
         Permutation permutation = (Permutation) variable;
-
         double totalTime = 0;
-        FrameDTO frameDTO = null;
 
-        for (int i = 0; i < permutation.size() - 1; i++)
+        FrameDTO frameDTO = null;
+        StopDTO departureStop;
+        StopDTO arrivalStop;
+
+        departureStop = stops.get(0);
+        for (int i = 0; i < permutation.size(); i++)
         {
-            StopDTO departureStop = stops.get(permutation.get(i));
-            StopDTO arrivalStop = stops.get(permutation.get(i+1));
+            arrivalStop = stops.get(permutation.get(i)+1);
             Map<Integer, Long> mapTime;
 
             List<FrameDTO> framesAux = findByIdDeparturesStopAndIdArrivalStop(departureStop.getId(), arrivalStop.getId());
 
-            if (framesAux.isEmpty())
-            {
-                return Double.MAX_VALUE;
-            }
+            if (framesAux.isEmpty()){ return Double.MAX_VALUE; }
 
-            if (i==0)
-            {
-                mapTime = getMapTime1(framesAux);
-            }
-            else
-            {
-                mapTime = getMapTime(framesAux, frameDTO.getArrivalDateTime());
-            }
+            if (i==0){ mapTime = getMapTime1(framesAux); }
+            else{ mapTime = getMapTime(framesAux, frameDTO.getArrivalDateTime()); }
 
             Map.Entry<Integer, Long> frameIdDuration = mapTime
                     .entrySet()
@@ -110,16 +110,37 @@ public class RoutingProblem extends AbstractProblem {
                     .findFirst()
                     .orElse(null);
 
-            if(Objects.isNull(frameDTO))
-            {
-                return Double.MAX_VALUE;
-            }
+            if(Objects.isNull(frameDTO)){ return Double.MAX_VALUE; }
 
             totalTime += frameIdDuration.getValue();
-
+            departureStop = arrivalStop;
         }
-        totalTime=totalTime-1;
-        totalTime=totalTime+1;
+
+        arrivalStop = stops.get(nIds-1);
+        Map<Integer, Long> mapTime;
+
+        List<FrameDTO> framesAux = findByIdDeparturesStopAndIdArrivalStop(departureStop.getId(), arrivalStop.getId());
+
+        if (framesAux.isEmpty()){ return Double.MAX_VALUE; }
+
+        if (Objects.isNull(frameDTO)){ mapTime = getMapTime1(framesAux); }
+        else{ mapTime = getMapTime(framesAux, frameDTO.getArrivalDateTime()); }
+
+        Map.Entry<Integer, Long> frameIdDuration = mapTime
+                .entrySet()
+                .stream()
+                .min(Map.Entry.comparingByValue())
+                .orElse(null);
+
+        frameDTO = framesAux
+                .stream()
+                .filter(frame -> frame.getId().equals(Objects.requireNonNull(frameIdDuration).getKey()))
+                .findFirst()
+                .orElse(null);
+
+        if(Objects.isNull(frameDTO)){ return Double.MAX_VALUE; }
+
+        totalTime += frameIdDuration.getValue();
         return totalTime;
     }
 
@@ -176,19 +197,18 @@ public class RoutingProblem extends AbstractProblem {
 
     public List<FrameDTO> findByIdDeparturesStopAndIdArrivalStop(Integer idDepartureStop, Integer idArrivalStop)
     {
-       List<FrameDTO> result = this.frames
+        return  this.frames
                 .stream()
                 .filter(frameDTO -> frameDTO.getIdStopDeparture().equals(idDepartureStop))
                 .filter(frameDTO -> frameDTO.getIdStopArrival().equals(idArrivalStop))
                 .collect(Collectors.toList());
-       return result;
     }
 
     @Override
     public Solution newSolution()
     {
         Solution solution = new Solution(1,2);
-        solution.setVariable(0, EncodingUtils.newPermutation(14));
+        solution.setVariable(0, EncodingUtils.newPermutation(nIds-2));
         return solution;
     }
 }
